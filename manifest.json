@@ -1,0 +1,21 @@
+{
+  "name": "Nuevo Negocio",
+  "short_name": "Negocio",
+  "description": "Pedí online lo mejor de nuestro negocio.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FDF9F1",
+  "theme_color": "#D48C29",
+  "icons": [
+    {
+      "src": "icono-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
