@@ -2,7 +2,9 @@ const CACHE_NAME = 'negocio-v1'; // <-- ¡Subimos a v3 para forzar el cambio!
 const urlsToCache = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icono-192.png',
+  './icono-512.png'
 ];
 
 // 1. Instalar y guardar los archivos iniciales
