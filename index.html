@@ -1082,37 +1082,39 @@ document.addEventListener('DOMContentLoaded', () => {
         mensaje += `\n💰 *TOTAL:* ${formatPrice(total)}\n\n`;
         mensaje += `¡Muchas gracias!`;
 
-        try {
-            // Armamos el objeto con los nombres EXACTOS que espera tu Apps Script original
-            // Recorremos el carrito y armamos el texto "5x Producto A | 2x Producto B"
-            const detalleLegible = carrito.map(item => `${item.cantidad}x ${item.nombre}`).join(' | ');
+        // 1. Armamos el detalle de la compra para que la variable 'detalle' exista
+        const detalle = carrito.map(item => `${item.cantidad}x ${item.nombre}`).join(' | ');
 
-            const datosParaScript = {
-                nombre_cliente: nombre,
-                celular_cliente: celular,
-                total: total,
-                detalle_compra: detalleLegible 
-            };
+        // 2. Tu código inicia aquí
+        btnEnviarPedido.textContent = "Procesando...";
+            
+        // Convertimos los datos a formato URLSearchParams para que Apps Script los lea con e.parameter
+        const datosFormulario = new URLSearchParams();
+        datosFormulario.append("negocio_id", negocioActual);
+        datosFormulario.append("nombre_cliente", nombre); // Cambiado de 'nom' a 'nombre'
+        datosFormulario.append("celular_cliente", celular); // Cambiado de 'cel' a 'celular'
+        datosFormulario.append("detalle_compra", detalle);
+        datosFormulario.append("total", total);
 
-            fetch(URL_SHEET_REGISTRO, {
-                method: 'POST',
-                body: JSON.stringify(datosParaScript),
-                // Lo enviamos como texto plano para evitar el bloqueo de CORS (preflight options) en el navegador.
-                // Apps Script va a recibir este texto en e.postData.contents y lo va a parsear perfecto.
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8'
-                }
-            }).catch(err => console.log('Error al registrar en sheet:', err));
-        } catch(e) {
-            console.error('Error en el bloque de envío:', e);
-        }
+        fetch(URL_SHEET_REGISTRO, { 
+            method: 'POST', 
+            body: datosFormulario 
+        }).catch(console.error);
 
-        const urlWa = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
-        window.open(urlWa, '_blank');
-
-        vaciarCarrito();
-        modal.classList.remove('visible');
-        formCliente.reset();
+        setTimeout(() => {
+            // Nota: Cambié 'nom' por 'nombre'
+            const msg = `¡Hola El Buen Trigo! Soy *${nombre}*. Quiero encargar:%0A${carrito.map(i=>`▪ ${i.cantidad}x ${i.nombre}`).join('%0A')}%0A*Total: ${formatPrice(total)}*`;
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
+            
+            // Limpieza y reseteo
+            carrito = []; 
+            localStorage.removeItem(STORAGE_KEY); 
+            actualizarCarritoUI();
+            filtrarYRenderizarProductos(); // Reemplacé 'actualizarBotonesProductos()' por la función que sí existe en tu código
+            modal.classList.remove('visible');
+            formCliente.reset(); // Para limpiar los inputs de nombre y celular
+            btnEnviarPedido.textContent = "Encargar por WhatsApp";
+        }, 1000);
     });
 
     // --- PWA INSTALACIÓN (SOLO CELULARES) ---
@@ -1144,6 +1146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             bannerInstalacion.classList.remove('show');
         });
     }
+    
 
     // --- INICIALIZAR ---
     cargarCarrito();
